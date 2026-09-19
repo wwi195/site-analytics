@@ -488,12 +488,27 @@ function setup() {
   if (raw.getLastRow() === 0) {
     raw.appendRow(['date', 'timestamp', 'siteId', 'path', 'referrer', 'ua', 'screenWidth', 'isUU']);
   }
+  raw.getRange('A:A').setNumberFormat('@');
   var daily = ss.getSheetByName(DAILY_SHEET_NAME) || ss.insertSheet(DAILY_SHEET_NAME);
   if (daily.getLastRow() === 0) {
     daily.appendRow(['date', 'siteId', 'pv', 'uu']);
   }
+  daily.getRange('A:A').setNumberFormat('@');
 }
+```
 
+`raw.getRange('A:A').setNumberFormat('@')` / `daily.getRange('A:A').setNumberFormat('@')` は、
+両シートの `date` 列（A列）をプレインテキスト形式に固定する。Sheetsのセル書式が「自動」の
+ままだと、`YYYY-MM-DD` のような日付に見える文字列を `appendRow`/`setValue` で書き込んだ際に
+Dateオブジェクトへ自動変換されてしまい、`aggregateDaily` / `deleteOldRawRows_` /
+`getDashboardData` / `getTodayStats` が行う `String(row.date)` ベースの文字列比較が
+静かに壊れる（集計が一切走らない、90日超の `raw` 行が永久に削除されない、「直近30日」
+フィルタが機能しない等）。列全体（`'A:A'`）に対して書式を設定することで、既存行だけでなく
+`collector.gs`（未実装）を含む今後の追記行にも書式が自動的に適用される。これらの呼び出しは
+ヘッダー作成の `if` 節の外（無条件）に置き、既に初期化済みのスプレッドシートに対して
+`setup()` を再実行しても書式が再適用される（同じ書式を再設定するだけなので安全・冪等）。
+
+```javascript
 function createDailyTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === 'aggregateDaily') {

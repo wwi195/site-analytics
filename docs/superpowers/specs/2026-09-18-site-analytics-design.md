@@ -88,7 +88,14 @@ GitHub Pagesで公開している複数の静的サイト（ポートフォリ�
 - `aggregateDaily()`: 日次トリガーで実行。前日分の `raw` を `siteId` ごとに集計し、`daily`
   シートへ upsert（同じ `date`+`siteId` の行が既にあれば更新、なければ追加）。
   併せて **90日より前の `raw` 行を削除**する
-- `setup()`: `raw` / `daily` シートのヘッダー行を作成する初期セットアップ関数（初回に手動実行）
+- `setup()`: `raw` / `daily` シートのヘッダー行を作成する初期セットアップ関数（初回に手動実行）。
+  併せて両シートの `date` 列（A列）を `setNumberFormat('@')` でプレイン
+  テキスト形式に固定する。Sheetsのセル書式が「自動」のままだと、`appendRow`
+  等で書き込んだ `YYYY-MM-DD` 形式の文字列がDateオブジェクトへ自動変換されてしまい、
+  `aggregateDaily` / `deleteOldRawRows_` / `getDashboardData` / `getTodayStats` が行う
+  `String(row.date)` ベースの日付文字列比較が静かに壊れる（集計されない・削除されない・
+  フィルタが機能しない等）。列全体（`'A:A'`）に書式を設定することで、既存行だけでなく
+  `collector.gs` を含む今後の追記行にも自動で適用される
 - `createDailyTrigger()`: `aggregateDaily` の日次時間主導トリガーを設置する関数
   （初回に手動実行）
 

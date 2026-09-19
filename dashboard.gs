@@ -15,10 +15,12 @@ function setup() {
   if (raw.getLastRow() === 0) {
     raw.appendRow(['date', 'timestamp', 'siteId', 'path', 'referrer', 'ua', 'screenWidth', 'isUU']);
   }
+  raw.getRange('A:A').setNumberFormat('@');
   var daily = ss.getSheetByName(DAILY_SHEET_NAME) || ss.insertSheet(DAILY_SHEET_NAME);
   if (daily.getLastRow() === 0) {
     daily.appendRow(['date', 'siteId', 'pv', 'uu']);
   }
+  daily.getRange('A:A').setNumberFormat('@');
 }
 
 function createDailyTrigger() {
