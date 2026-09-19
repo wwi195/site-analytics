@@ -36,13 +36,29 @@
     }
   }
 
+  function buildPayload(opts) {
+    var dateStr = formatLocalDate(opts.now);
+    var isUU = checkAndMarkUU(opts.siteId, dateStr, opts.storage);
+    return {
+      siteId: opts.siteId,
+      path: opts.path,
+      referrer: opts.referrer,
+      ua: opts.ua,
+      screenWidth: opts.screenWidth,
+      timestamp: opts.now.toISOString(),
+      date: dateStr,
+      isUU: isUU
+    };
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       isLocalHost: isLocalHost,
       isBotUA: isBotUA,
       formatLocalDate: formatLocalDate,
       buildUUKey: buildUUKey,
-      checkAndMarkUU: checkAndMarkUU
+      checkAndMarkUU: checkAndMarkUU,
+      buildPayload: buildPayload
     };
   }
 })();

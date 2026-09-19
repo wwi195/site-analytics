@@ -60,3 +60,35 @@ test('checkAndMarkUU falls back to true when storage throws', () => {
   var storage = makeThrowingStorage();
   assert.equal(tracker.checkAndMarkUU('portfolio', '2026-09-18', storage), true);
 });
+
+test('buildPayload assembles the full tracking payload', () => {
+  var storage = makeMemoryStorage();
+  var now = new Date(2026, 8, 18, 10, 30, 0);
+  var payload = tracker.buildPayload({
+    siteId: 'portfolio',
+    path: '/about',
+    referrer: 'https://google.com/',
+    ua: 'Mozilla/5.0',
+    screenWidth: 1440,
+    now: now,
+    storage: storage
+  });
+
+  assert.equal(payload.siteId, 'portfolio');
+  assert.equal(payload.path, '/about');
+  assert.equal(payload.referrer, 'https://google.com/');
+  assert.equal(payload.ua, 'Mozilla/5.0');
+  assert.equal(payload.screenWidth, 1440);
+  assert.equal(payload.date, '2026-09-18');
+  assert.equal(payload.timestamp, now.toISOString());
+  assert.equal(payload.isUU, true);
+});
+
+test('buildPayload marks isUU false on a repeat visit same day', () => {
+  var storage = makeMemoryStorage();
+  var now = new Date(2026, 8, 18, 10, 30, 0);
+  var opts = { siteId: 'portfolio', path: '/', referrer: '', ua: '', screenWidth: 800, now: now, storage: storage };
+  tracker.buildPayload(opts);
+  var second = tracker.buildPayload(opts);
+  assert.equal(second.isUU, false);
+});
