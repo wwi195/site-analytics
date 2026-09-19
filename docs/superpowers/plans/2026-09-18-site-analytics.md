@@ -693,7 +693,7 @@ git commit -m "feat(dashboard.gs): add daily aggregation, raw retention, and das
 
 ```javascript
 var SPREADSHEET_ID = 'PUT_YOUR_SPREADSHEET_ID_HERE'; // dashboard.gs と同じスプレッドシートID
-var ALLOWED_SITE_IDS = ['portfolio'];
+var ALLOWED_SITE_IDS = ['portfolio']; // 例。計測したいサイトのsiteIdに置き換え・追加する
 var BOT_UA_PATTERN = /bot|crawler|spider/i;
 var RAW_SHEET_NAME = 'raw';
 
