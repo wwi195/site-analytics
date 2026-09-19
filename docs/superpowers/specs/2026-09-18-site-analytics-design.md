@@ -73,8 +73,14 @@ GitHub Pagesで公開している複数の静的サイト（ポートフォリ�
   2. `siteId` が `ALLOWED_SITE_IDS` に含まれるかチェック（含まれなければ終了）
   3. `ua` の bot 判定（マッチすれば終了）
   4. `LockService.getScriptLock().tryLock(3000)`（失敗すれば終了）
-  5. `raw` シートへ1行追記（`date, timestamp, siteId, path, referrer, ua, screenWidth, isUU`）
-  6. ロック解放
+  5. `path` / `referrer` / `ua` を `sanitizeForSheet_()` でサニタイズ（値が `=` `+` `-` `@`
+     のいずれかで始まる場合、先頭にシングルクォートを付与して文字列として強制する。
+     これらの値は「アクセスできるユーザー: 全員」で受信するため攻撃者が任意の文字列を
+     送信可能であり、無害化しないと Google スプレッドシートの数式として解釈され、
+     シートを開いた際に意図しない数式実行や外部へのデータ流出（CSV/数式インジェクション）
+     を招く恐れがある）
+  6. `raw` シートへ1行追記（`date, timestamp, siteId, path, referrer, ua, screenWidth, isUU`）
+  7. ロック解放
 
 ## dashboard.gs
 

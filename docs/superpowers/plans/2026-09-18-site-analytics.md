@@ -697,6 +697,14 @@ var ALLOWED_SITE_IDS = ['portfolio'];
 var BOT_UA_PATTERN = /bot|crawler|spider/i;
 var RAW_SHEET_NAME = 'raw';
 
+function sanitizeForSheet_(value) {
+  var str = String(value == null ? '' : value);
+  if (/^[=+\-@]/.test(str)) {
+    return "'" + str;
+  }
+  return str;
+}
+
 function doPost(e) {
   var body;
   try {
@@ -731,9 +739,9 @@ function doPost(e) {
       body.date || '',
       body.timestamp || '',
       body.siteId || '',
-      body.path || '',
-      body.referrer || '',
-      body.ua || '',
+      sanitizeForSheet_(body.path || ''),
+      sanitizeForSheet_(body.referrer || ''),
+      sanitizeForSheet_(body.ua || ''),
       body.screenWidth || '',
       body.isUU ? 1 : 0
     ]);
@@ -755,7 +763,7 @@ function doPost(e) {
 
 ```bash
 git add collector.gs
-git commit -m "feat(collector.gs): add doPost with site allowlist and script lock"
+git commit -m "feat(collector.gs): add doPost with site allowlist, script lock, and formula-injection guard"
 ```
 
 ---
