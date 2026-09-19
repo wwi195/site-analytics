@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 24px; }
+    select { font-size: 14px; padding: 4px; margin-bottom: 16px; }
+    table { border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    #chart { width: 100%; max-width: 800px; height: 320px; }
+  </style>
+</head>
+<body>
+  <h1>Site Analytics</h1>
+  <select id="siteSelect"></select>
+  <div id="chart"></div>
+  <table id="statsTable">
+    <thead><tr><th>date</th><th>pv</th><th>uu</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    google.charts.load('current', { packages: ['corechart'] });
+
+    function init() {
+      google.script.run.withSuccessHandler(populateSiteSelect).getSiteList();
+    }
+
+    function populateSiteSelect(siteIds) {
+      var select = document.getElementById('siteSelect');
+      select.innerHTML = '';
+      siteIds.forEach(function (siteId) {
+        var option = document.createElement('option');
+        option.value = siteId;
+        option.textContent = siteId;
+        select.appendChild(option);
+      });
+      select.addEventListener('change', function () {
+        loadStats(select.value);
+      });
+      if (siteIds.length > 0) {
+        loadStats(siteIds[0]);
+      }
+    }
+
+    function loadStats(siteId) {
+      google.script.run.withSuccessHandler(function (dailyRows) {
+        google.script.run.withSuccessHandler(function (todayRow) {
+          renderStats(mergeStats(dailyRows, todayRow));
+        }).getTodayStats(siteId);
+      }).getDashboardData(siteId);
+    }
+
+    function mergeStats(dailyRows, todayRow) {
+      var rows = dailyRows.slice();
+      if (todayRow && rows.length > 0 && rows[rows.length - 1].date === todayRow.date) {
+        rows[rows.length - 1] = todayRow;
+      } else if (todayRow) {
+        rows.push(todayRow);
+      }
+      return rows;
+    }
+
+    function renderStats(rows) {
+      renderTable(rows);
+      renderChart(rows);
+    }
+
+    function renderTable(rows) {
+      var tbody = document.querySelector('#statsTable tbody');
+      tbody.innerHTML = '';
+      rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + row.date + '</td><td>' + row.pv + '</td><td>' + row.uu + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderChart(rows) {
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'date');
+      data.addColumn('number', 'PV');
+      data.addColumn('number', 'UU');
+      rows.forEach(function (row) {
+        data.addRow([row.date, row.pv, row.uu]);
+      });
+      var chart = new google.visualization.LineChart(document.getElementById('chart'));
+      chart.draw(data, { legend: { position: 'top' }, curveType: 'function' });
+    }
+
+    google.charts.setOnLoadCallback(init);
+  </script>
+</body>
+</html>
