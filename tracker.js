@@ -12,10 +12,18 @@
     return BOT_UA_PATTERN.test(ua || '');
   }
 
+  function formatLocalDate(date) {
+    var y = date.getFullYear();
+    var m = String(date.getMonth() + 1).padStart(2, '0');
+    var d = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       isLocalHost: isLocalHost,
-      isBotUA: isBotUA
+      isBotUA: isBotUA,
+      formatLocalDate: formatLocalDate
     };
   }
 })();

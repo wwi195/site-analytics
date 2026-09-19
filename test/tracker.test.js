@@ -17,3 +17,9 @@ test('isBotUA detects bot/crawler/spider case-insensitively', () => {
   assert.equal(tracker.isBotUA(''), false);
   assert.equal(tracker.isBotUA(undefined), false);
 });
+
+test('formatLocalDate formats as YYYY-MM-DD with zero padding', () => {
+  assert.equal(tracker.formatLocalDate(new Date(2026, 0, 5)), '2026-01-05');
+  assert.equal(tracker.formatLocalDate(new Date(2026, 11, 31)), '2026-12-31');
+  assert.equal(tracker.formatLocalDate(new Date(2026, 8, 18)), '2026-09-18');
+});
