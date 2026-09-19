@@ -73,13 +73,22 @@ GitHub Pagesで公開している複数の静的サイト（ポートフォリ�
   2. `siteId` が `ALLOWED_SITE_IDS` に含まれるかチェック（含まれなければ終了）
   3. `ua` の bot 判定（マッチすれば終了）
   4. `LockService.getScriptLock().tryLock(3000)`（失敗すれば終了）
-  5. `path` / `referrer` / `ua` を `sanitizeForSheet_()` でサニタイズ（値が `=` `+` `-` `@`
-     のいずれかで始まる場合、先頭にシングルクォートを付与して文字列として強制する。
-     これらの値は「アクセスできるユーザー: 全員」で受信するため攻撃者が任意の文字列を
-     送信可能であり、無害化しないと Google スプレッドシートの数式として解釈され、
-     シートを開いた際に意図しない数式実行や外部へのデータ流出（CSV/数式インジェクション）
-     を招く恐れがある）
-  6. `raw` シートへ1行追記（`date, timestamp, siteId, path, referrer, ua, screenWidth, isUU`）
+  5. `date` / `timestamp` / `path` / `referrer` / `ua` を `sanitizeForSheet_()` でサニタイズ
+     （値が `=` `+` `-` `@` のいずれかで始まる場合、先頭にシングルクォートを付与して文字列
+     として強制する。これらの値は「アクセスできるユーザー: 全員」で受信するため攻撃者が
+     任意の文字列を送信可能であり、無害化しないと Google スプレッドシートの数式として
+     解釈され、シートを開いた際に意図しない数式実行や外部へのデータ流出（CSV/数式
+     インジェクション）を招く恐れがある。`date`/`timestamp` も `path`/`referrer`/`ua` と
+     同様に攻撃者制御下にあるため対象に含める。正当な `YYYY-MM-DD` / ISO8601形式の値は
+     数字で始まるためこのパターンにマッチせず、正規のトラフィックには影響しない）。
+     `screenWidth` は本来数値であるべきなので `Number(body.screenWidth) || 0` で数値強制
+     し、数式インジェクション文字列を含め非数値はすべて `0` に丸める
+  6. `raw` シートへ1行追記（`date, timestamp, siteId, path, referrer, ua, screenWidth, isUU`）。
+     追記が失敗した場合（`SPREADSHEET_ID` 未設定・シート名誤り・`setup()` 未実行等で
+     `getSheetByName('raw')` が `null` を返し `.appendRow` が例外を投げる、等）は
+     `Logger.log(err)` でGASの実行ログに記録する（HTTPレスポンスには一切含めず、
+     呼び出し元には常に `'ok'` を返す。ログはApps Scriptエディタの実行数/ログ画面で
+     確認できる診断用途のみ）
   7. ロック解放
 
 ## dashboard.gs
@@ -131,7 +140,8 @@ GitHub Pagesで公開している複数の静的サイト（ポートフォリ�
 
 - tracker.js: 例外・送信失敗をすべて握りつぶし、サイト本体に一切影響を与えない
 - collector.gs: 不正な入力（JSON不正・siteId不一致・ロック取得失敗）はすべて静かに無視し、
-  エラーを外部に見せない
+  エラーを外部に見せない。`raw` シートへの書き込み自体が失敗した場合（設定ミス等）は
+  `Logger.log(err)` でGAS実行ログにのみ記録し、HTTPレスポンスには一切影響させない
 - dashboard.gs の集計処理: 個人用ツールのため通知等は行わず、実行ログのみ残す
 
 ## テスト方針

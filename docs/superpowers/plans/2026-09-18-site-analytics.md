@@ -736,17 +736,17 @@ function doPost(e) {
   try {
     var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(RAW_SHEET_NAME);
     sheet.appendRow([
-      body.date || '',
-      body.timestamp || '',
+      sanitizeForSheet_(body.date || ''),
+      sanitizeForSheet_(body.timestamp || ''),
       body.siteId || '',
       sanitizeForSheet_(body.path || ''),
       sanitizeForSheet_(body.referrer || ''),
       sanitizeForSheet_(body.ua || ''),
-      body.screenWidth || '',
+      Number(body.screenWidth) || 0,
       body.isUU ? 1 : 0
     ]);
   } catch (err) {
-    // swallow — collector must never surface errors to the caller
+    Logger.log(err); // visible in GAS Executions log for debugging; never surfaces to the HTTP caller
   } finally {
     lock.releaseLock();
   }
