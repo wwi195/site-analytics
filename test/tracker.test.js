@@ -23,3 +23,40 @@ test('formatLocalDate formats as YYYY-MM-DD with zero padding', () => {
   assert.equal(tracker.formatLocalDate(new Date(2026, 11, 31)), '2026-12-31');
   assert.equal(tracker.formatLocalDate(new Date(2026, 8, 18)), '2026-09-18');
 });
+
+function makeMemoryStorage() {
+  var store = {};
+  return {
+    getItem: function (key) { return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null; },
+    setItem: function (key, value) { store[key] = value; }
+  };
+}
+
+function makeThrowingStorage() {
+  return {
+    getItem: function () { throw new Error('storage disabled'); },
+    setItem: function () { throw new Error('storage disabled'); }
+  };
+}
+
+test('buildUUKey namespaces by siteId and date', () => {
+  assert.equal(tracker.buildUUKey('portfolio', '2026-09-18'), 'sa_uu_portfolio_2026-09-18');
+});
+
+test('checkAndMarkUU returns true on first visit, false on repeat', () => {
+  var storage = makeMemoryStorage();
+  assert.equal(tracker.checkAndMarkUU('portfolio', '2026-09-18', storage), true);
+  assert.equal(tracker.checkAndMarkUU('portfolio', '2026-09-18', storage), false);
+});
+
+test('checkAndMarkUU treats a different site or date as a new UU', () => {
+  var storage = makeMemoryStorage();
+  tracker.checkAndMarkUU('portfolio', '2026-09-18', storage);
+  assert.equal(tracker.checkAndMarkUU('portfolio', '2026-09-19', storage), true);
+  assert.equal(tracker.checkAndMarkUU('other-site', '2026-09-18', storage), true);
+});
+
+test('checkAndMarkUU falls back to true when storage throws', () => {
+  var storage = makeThrowingStorage();
+  assert.equal(tracker.checkAndMarkUU('portfolio', '2026-09-18', storage), true);
+});

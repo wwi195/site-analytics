@@ -19,11 +19,30 @@
     return y + '-' + m + '-' + d;
   }
 
+  function buildUUKey(siteId, dateStr) {
+    return 'sa_uu_' + siteId + '_' + dateStr;
+  }
+
+  function checkAndMarkUU(siteId, dateStr, storage) {
+    var key = buildUUKey(siteId, dateStr);
+    try {
+      if (storage.getItem(key)) {
+        return false;
+      }
+      storage.setItem(key, '1');
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       isLocalHost: isLocalHost,
       isBotUA: isBotUA,
-      formatLocalDate: formatLocalDate
+      formatLocalDate: formatLocalDate,
+      buildUUKey: buildUUKey,
+      checkAndMarkUU: checkAndMarkUU
     };
   }
 })();
