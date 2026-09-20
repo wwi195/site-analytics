@@ -36,6 +36,14 @@ function formatDate_(d) {
   return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 }
 
+// Sheets silently coerces date-looking strings written via the API into
+// Date cells even under a '@' (plain text) number format, so any 'date'
+// column value read back may be a Date instead of the 'yyyy-MM-dd' string
+// that was written. Normalize before comparing.
+function normalizeDate_(value) {
+  return value instanceof Date ? formatDate_(value) : String(value);
+}
+
 function readSheetAsObjects_(sheet) {
   var values = sheet.getDataRange().getValues();
   var headers = values[0];
@@ -43,7 +51,9 @@ function readSheetAsObjects_(sheet) {
   for (var i = 1; i < values.length; i++) {
     var row = {};
     for (var c = 0; c < headers.length; c++) {
-      row[headers[c]] = values[i][c];
+      var value = values[i][c];
+      if (headers[c] === 'date') value = normalizeDate_(value);
+      row[headers[c]] = value;
     }
     rows.push(row);
   }
@@ -79,7 +89,7 @@ function aggregateDaily() {
   Object.keys(stats).forEach(function (siteId) {
     var existingRowIndex = -1;
     for (var i = 1; i < dailyValues.length; i++) {
-      if (String(dailyValues[i][dateCol]) === targetDate && dailyValues[i][siteCol] === siteId) {
+      if (normalizeDate_(dailyValues[i][dateCol]) === targetDate && dailyValues[i][siteCol] === siteId) {
         existingRowIndex = i;
         break;
       }
@@ -105,7 +115,7 @@ function deleteOldRawRows_(rawSheet) {
   var values = rawSheet.getDataRange().getValues();
   var rowsToDelete = [];
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) < cutoffStr) {
+    if (normalizeDate_(values[i][0]) < cutoffStr) {
       rowsToDelete.push(i + 1);
     }
   }
