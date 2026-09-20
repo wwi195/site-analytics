@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var ENDPOINT = 'https://script.google.com/macros/s/PUT_COLLECTOR_DEPLOYMENT_ID_HERE/exec';
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyJ4LB0sFqcco6XyunfmAcOH8z-7-ShJptTw30XTceZVTR2r8PX03-yCimWTFSxuUbK/exec';
   var BOT_UA_PATTERN = /bot|crawler|spider/i;
 
   function isLocalHost(hostname) {
