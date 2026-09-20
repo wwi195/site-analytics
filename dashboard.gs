@@ -117,8 +117,12 @@ function deleteOldRawRows_(rawSheet) {
 function getSiteList() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var daily = readSheetAsObjects_(ss.getSheetByName(DAILY_SHEET_NAME));
+  var raw = readSheetAsObjects_(ss.getSheetByName(RAW_SHEET_NAME));
   var seen = {};
   daily.forEach(function (row) {
+    if (row.siteId) seen[row.siteId] = true;
+  });
+  raw.forEach(function (row) {
     if (row.siteId) seen[row.siteId] = true;
   });
   return Object.keys(seen).sort();
