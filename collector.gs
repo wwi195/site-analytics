@@ -1,5 +1,28 @@
 var SPREADSHEET_ID = 'PUT_YOUR_SPREADSHEET_ID_HERE'; // dashboard.gs と同じスプレッドシートID
-var ALLOWED_SITE_IDS = ['portfolio']; // 例。計測したいサイトのsiteIdに置き換え・追加する
+var ALLOWED_SITE_IDS = [
+  'portfolio',
+  'pachinko-simulator-ghoul',
+  'pachinko-simulator-ghouldeka',
+  'pachinko-simulator-ghouldeka-rush',
+  'pachinko-simulator-ghoul-idle',
+  'pachinko-simulator-ghoul-rush',
+  'pachinko-simulator-garo',
+  'juggler-simulator',
+  'okidoki-simulator',
+  'million-god-simulator',
+  'pachinko-simulator-sao',
+  'pachinko-simulator-boukyousei',
+  'pachinko-simulator-bancho99',
+  'pachinko-simulator-rezero2',
+  'pachinko-simulator-lycoris',
+  'asobiba-gacha',
+  'diet-psychology-simulator',
+  'kanda-dump-site',
+  'keiba-jockey-simulator',
+  'keiba-jockey-simulator2',
+  'health-calendar',
+  'matsuri-navi'
+];
 var BOT_UA_PATTERN = /bot|crawler|spider/i;
 var RAW_SHEET_NAME = 'raw';
 
