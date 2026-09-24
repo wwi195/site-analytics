@@ -61,13 +61,19 @@ function readSheetAsObjects_(sheet) {
 }
 
 function aggregateDaily() {
+  var yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  aggregateForDate_(formatDate_(yesterday));
+  deleteOldRawRows_(SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(RAW_SHEET_NAME));
+}
+
+// Aggregates a single yyyy-MM-dd date from raw into daily. Used by the daily
+// trigger (aggregateDaily, always "yesterday") and by manual backfills for
+// past dates that were missed (e.g. before createDailyTrigger had been run).
+function aggregateForDate_(targetDate) {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var rawSheet = ss.getSheetByName(RAW_SHEET_NAME);
   var dailySheet = ss.getSheetByName(DAILY_SHEET_NAME);
-
-  var yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  var targetDate = formatDate_(yesterday);
 
   var rawRows = readSheetAsObjects_(rawSheet);
   var stats = {};
@@ -103,8 +109,6 @@ function aggregateDaily() {
       dailySheet.getRange(existingRowIndex + 1, uuCol + 1).setValue(uu);
     }
   });
-
-  deleteOldRawRows_(rawSheet);
 }
 
 function deleteOldRawRows_(rawSheet) {

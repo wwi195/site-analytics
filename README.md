@@ -161,6 +161,7 @@ GASプロジェクトに分けている。
   `dashboard.gs`に`normalizeDate_()`を追加し、`readSheetAsObjects_()`が返す
   `date`列をDate型でも文字列でも常に`yyyy-MM-dd`形式に正規化するよう修正済み
   （`collector.gs`や既存データの書き換えは不要）。
+- **`createDailyTrigger`が反映されておらず日次集計が全く動いていなかった事例**: セットアップ手順3-11で`createDailyTrigger`を実行したはずだったが、実際にはトリガーが1つも登録されておらず（GASエディタ左の時計アイコン「トリガー」で確認可能）、`daily`シートがずっと空のままだった。`raw`は90日間残るため過去分データは失われていなかったが、`daily`（グラフ・表用の日次集計）だけが埋まっていなかった。対処: `createDailyTrigger`を再実行してトリガーを登録し、`aggregateForDate_(targetDate)`（`aggregateDaily`から抽出した内部関数）を過去の各日付に対して手動実行して`daily`を遡って埋めた。`createDailyTrigger`実行後は、GASエディタの「トリガー」画面で実際に1件登録されているか必ず目視確認すること（関数実行が完了しただけでは登録された保証にならない）。
 - **運用初日はダッシュボードのサイト選択プルダウンが空になっていた既知の不具合**:
   `getSiteList()` が `daily` シートのみを参照していたため、`aggregateDaily` が
   一度も走っていない初日（`daily` が空）はプルダウンに何も表示されず、テーブルも
